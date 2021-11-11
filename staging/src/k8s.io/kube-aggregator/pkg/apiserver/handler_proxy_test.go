@@ -22,6 +22,7 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io/ioutil"
+	"k8s.io/apimachinery/pkg/types"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -37,11 +38,7 @@ import (
 	"golang.org/x/net/websocket"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-<<<<<<< HEAD
-	"k8s.io/apimachinery/pkg/types"
-=======
 	utilnet "k8s.io/apimachinery/pkg/util/net"
->>>>>>> v1.21.6
 	"k8s.io/apimachinery/pkg/util/proxy"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apiserver/pkg/authentication/user"
