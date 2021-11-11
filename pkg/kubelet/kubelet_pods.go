@@ -981,7 +981,10 @@ func (kl *Kubelet) filterOutInactivePods(pods []*v1.Pod) []*v1.Pod {
 		if kl.podWorkers.IsPodKnownTerminated(p.UID) {
 			continue
 		}
+<<<<<<< HEAD
 
+=======
+>>>>>>> v1.22.3
 		// terminal pods are considered inactive UNLESS they are actively terminating
 		if kl.isAdmittedPodTerminal(p) && !kl.podWorkers.IsPodTerminationRequested(p.UID) {
 			continue
@@ -1098,12 +1101,16 @@ func (kl *Kubelet) HandlePodCleanups() error {
 	restartablePods := make(map[types.UID]sets.Empty)
 	for uid, sync := range workingPods {
 		switch sync {
-		case SyncPodWork:
+		case SyncPod:
 			runningPods[uid] = struct{}{}
 			possiblyRunningPods[uid] = struct{}{}
-		case TerminatingPodWork:
+		case TerminatingPod:
 			possiblyRunningPods[uid] = struct{}{}
+<<<<<<< HEAD
 		case TemporarilyTerminatedPodWork:
+=======
+		case TerminatedAndRecreatedPod:
+>>>>>>> v1.22.3
 			restartablePods[uid] = struct{}{}
 		}
 	}
@@ -1120,8 +1127,8 @@ func (kl *Kubelet) HandlePodCleanups() error {
 		return err
 	}
 	for _, runningPod := range runningRuntimePods {
-		switch workType, ok := workingPods[runningPod.ID]; {
-		case ok && workType == SyncPodWork, ok && workType == TerminatingPodWork:
+		switch workerState, ok := workingPods[runningPod.ID]; {
+		case ok && workerState == SyncPod, ok && workerState == TerminatingPod:
 			// if the pod worker is already in charge of this pod, we don't need to do anything
 			continue
 		default:
