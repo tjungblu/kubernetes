@@ -153,11 +153,7 @@ type PodWorkers interface {
 	// has been called once, the workers are assumed to be fully initialized and
 	// subsequent calls to ShouldPodContentBeRemoved on unknown pods will return
 	// true. It returns a map describing the state of each known pod worker.
-<<<<<<< HEAD
 	SyncKnownPods(desiredPods []*v1.Pod) map[types.UID]PodWorkType
-=======
-	SyncKnownPods(desiredPods []*v1.Pod) map[types.UID]PodWorkerState
->>>>>>> v1.22.3
 
 	// IsPodKnownTerminated returns true if the provided pod UID is known by the pod
 	// worker to be terminated. If the pod has been force deleted and the pod worker
@@ -1062,15 +1058,9 @@ func (p *podWorkers) SyncKnownPods(desiredPods []*v1.Pod) map[types.UID]PodWorke
 		switch {
 		case !status.terminatedAt.IsZero():
 			if status.restartRequested {
-<<<<<<< HEAD
-				workers[uid] = TemporarilyTerminatedPodWork
-			} else {
-				workers[uid] = TerminatedPodWork
-=======
 				workers[uid] = TerminatedAndRecreatedPod
 			} else {
 				workers[uid] = TerminatedPod
->>>>>>> v1.22.3
 			}
 		case !status.terminatingAt.IsZero():
 			workers[uid] = TerminatingPod
