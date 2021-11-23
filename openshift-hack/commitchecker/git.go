@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -13,6 +14,7 @@ var (
 	MergeSummaryPattern    = regexp.MustCompile(`^Merge commit .*`)
 	UpstreamSummaryPattern = regexp.MustCompile(`^UPSTREAM: (revert: )?(([\w\.-]+\/[\w-\.-]+)?: )?(\d+:|<carry>:|<drop>:)`)
 	BumpSummaryPattern     = regexp.MustCompile(`^bump[\(\w].*`)
+	ReleaseBranchPattern   = regexp.MustCompile(`^release-4\.(?P<y_ver>[0-9]*)$`)
 
 	// patchRegexps holds regexps for paths inside vendor dir that are allowed to be patched directly.
 	// It must corresponds to published repositories.
@@ -253,6 +255,13 @@ func FetchRepo(repoDir string) error {
 	return nil
 }
 
+func FetchBranch(branch string) error {
+	if stdout, stderr, err := run("git", "fetch", "origin", branch); err != nil {
+		return fmt.Errorf("out=%s, err=%s, %s", strings.TrimSpace(stdout), strings.TrimSpace(stderr), err)
+	}
+	return nil
+}
+
 func IsAncestor(commit1, commit2, repoDir string) (bool, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -326,6 +335,37 @@ func CurrentRev(repoDir string) (string, error) {
 	} else {
 		return strings.TrimSpace(stdout), nil
 	}
+}
+
+func CurrentBranch() (string, error) {
+	stdout, stderr, err := run("git", "rev-parse", `--abbrev-ref`, "HEAD")
+	if err != nil {
+		return "", fmt.Errorf("%s: %s", stderr, err)
+	}
+	return strings.TrimSpace(stdout), nil
+}
+
+func IsReleaseBranch(s string) bool {
+	return ReleaseBranchPattern.MatchString(s)
+}
+
+func ReleaseBranchYVersion(s string) (int, error) {
+	submatch := ReleaseBranchPattern.FindStringSubmatch(s)
+	if len(submatch) != 2 {
+		return 0, fmt.Errorf("could not find submatch for y version in string %s", s)
+	}
+
+	atoi, err := strconv.Atoi(submatch[1])
+	if err != nil {
+		return 0, fmt.Errorf("couldn't parse y version %s. error was: %w", submatch[0], err)
+	}
+
+	return atoi, nil
+}
+
+func IsCommitMissingInBranch(commit Commit, branch string) bool {
+	stdout, _, _ := run("git", "branch", "--contains", commit.Sha)
+	return !strings.Contains(stdout, branch)
 }
 
 func emailInCommit(sha string) (string, error) {

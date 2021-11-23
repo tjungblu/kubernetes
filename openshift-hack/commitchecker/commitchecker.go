@@ -8,8 +8,11 @@ import (
 
 func main() {
 	var start, end string
+	var enableRebaseCheck bool
+
 	flag.StringVar(&start, "start", "master", "The start of the revision range for analysis")
 	flag.StringVar(&end, "end", "HEAD", "The end of the revision range for analysis")
+	flag.BoolVar(&enableRebaseCheck, "check-rebase", false, "enables additional safety checks for rebases")
 	flag.Parse()
 
 	commits, err := CommitsBetween(start, end)
@@ -26,6 +29,13 @@ func main() {
 	for _, validate := range AllCommitValidators {
 		for _, commit := range commits {
 			errs = append(errs, validate(commit)...)
+		}
+	}
+
+	if enableRebaseCheck {
+		errs := ValidateReleaseBranchConsistency(commits)
+		for _, err := range errs {
+			_, _ = fmt.Fprintf(os.Stderr, "%s\n\n", err)
 		}
 	}
 

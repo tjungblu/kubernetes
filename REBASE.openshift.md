@@ -309,6 +309,21 @@ podman run -it --rm -v $( pwd ):/go/k8s.io/kubernetes:Z --workdir=/go/k8s.io/kub
     exhibiting test failure. If in doubt, ask for help!
 - Verify the code with `make verify`
 
+## Important Reviewer Considerations
+
+The rebases have to merge from the latest OCP release to the very last supported, for example from 4.9 all the way down to 4.6.
+It can happen that one of the earlier releases (eg 4.7) might be further ahead than the other rebases. This means that a
+customer upgrading a cluster from the ahead version (4.7) could regress on the missing fixes in later releases (4.8, 4.9 etc).
+
+There is a prow check in the `verify-commits` job that will test that commits in the current PR are also present in (n+2) branches ahead.
+This might have several false-positives due to the upstream release process, but it can be a helpful indicator that this PR is sane.
+The output of the tool can be found in the stdout log of the prow job, usually found in the artifacts `artifacts/test/artifacts/logs/scripts.log` path.
+
+Another check that should be done by the reviewer is the upstream release date check where you ensure that the rebase versions are
+close together in their release dates. Check out the respective rebases that are being proposed and cross-reference them 
+with the [k/k release page](https://kubernetes.io/releases/). k/k z releases come once around the middle of a month, so 
+if the upstream version release dates are further apart than 2-3 weeks leave make a remark about this and request an update.
+
 ## Reacting to new commits
 
 Inevitably, a rebase will take long enough that new commits will end up being
